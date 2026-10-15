@@ -1,0 +1,919 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>سمنار الفرز الأبجدي للأسماء - خوارزمية Bubble Sort ومقارنة ASCII</title>
+  <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&family=Fira+Code:wght@400;600&display=swap');
+    
+    body {
+      font-family: 'Cairo', system-ui, -apple-system, sans-serif;
+      background: radial-gradient(circle at 10% 20%, rgba(13, 19, 33, 1) 0%, rgba(8, 12, 22, 1) 90%);
+      color: #f1f5f9;
+      user-select: none;
+      overflow-x: hidden;
+    }
+    
+    code, pre, .font-mono {
+      font-family: 'Fira Code', monospace;
+      direction: ltr;
+      text-align: left;
+    }
+
+    .slide {
+      display: none;
+      opacity: 0;
+      transform: scale(0.98) translateY(12px);
+      transition: all 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    
+    .slide.active {
+      display: flex;
+      opacity: 1;
+      transform: scale(1) translateY(0);
+    }
+
+    .glass-card {
+      background: rgba(18, 26, 47, 0.72);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(56, 189, 248, 0.18);
+      box-shadow: 0 10px 35px -5px rgba(0, 0, 0, 0.5), 0 0 20px 0 rgba(14, 165, 233, 0.1);
+    }
+
+    .glass-accent {
+      background: linear-gradient(135deg, rgba(14, 165, 233, 0.15) 0%, rgba(99, 102, 241, 0.1) 100%);
+      border: 1px solid rgba(56, 189, 248, 0.3);
+    }
+
+    .glow-text {
+      text-shadow: 0 0 25px rgba(56, 189, 248, 0.55);
+    }
+
+    .gradient-badge {
+      background: linear-gradient(135deg, #0ea5e9 0%, #6366f1 100%);
+    }
+
+    /* Custom scrollbars */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: rgba(15, 23, 42, 0.8);
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(56, 189, 248, 0.4);
+      border-radius: 9999px;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between p-3 md:p-6 text-slate-100">
+
+  <!-- Top Navigation & Header Bar -->
+  <header class="w-full max-w-7xl mx-auto flex items-center justify-between glass-card px-5 py-3 rounded-2xl mb-4">
+    <div class="flex items-center gap-3">
+      <div class="w-10 h-10 rounded-xl bg-cyan-500/20 border border-cyan-400/40 flex items-center justify-center text-cyan-400 font-bold text-lg shadow-[0_0_15px_rgba(6,182,212,0.4)]">
+        QU
+      </div>
+      <div>
+        <h1 class="text-sm md:text-base font-bold text-white tracking-wide">جامعة القادسية • كلية علوم الحاسوب وتكنولوجيا المعلومات</h1>
+        <p class="text-xs text-cyan-300/80">قسم علوم الحاسوب • حلقة سمنار أكاديمي</p>
+      </div>
+    </div>
+
+    <!-- Slide indicator & Controls -->
+    <div class="flex items-center gap-3">
+      <button id="toggleNotesBtn" onclick="toggleNotes()" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-indigo-950/80 hover:bg-indigo-900 border border-indigo-500/40 text-indigo-200 transition flex items-center gap-1.5 shadow-sm">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 100-6 3 3 0 000 6z"></path></svg>
+        <span>ملاحظات الإلقاء (Speaker Notes)</span>
+      </button>
+
+      <div class="px-3 py-1 bg-slate-900/80 border border-slate-700/60 rounded-lg text-xs font-mono text-cyan-400">
+        <span id="slideNumber">01</span> / <span id="totalSlides">10</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Slides Stage -->
+  <main class="w-full max-w-7xl mx-auto flex-1 flex flex-col justify-center relative my-auto">
+
+    <!-- ================= SLIDE 1: Cover Slide ================= -->
+    <section class="slide active flex-col justify-center items-center text-center py-6 px-4" data-slide="1" data-notes="السلام عليكم ورحمة الله وبركاته، دكتورة رشا، زملائي الأعزاء. نرحب بكم اليوم في هذا السمنار الأكاديمي بعنوان: فرز الأسماء أبجدياً باستخدام خوارزمية الفرز الفقاعي ومقارنة رموز ASCII في لغة C++. سنغوص معاً في فهم كيف يتعامل الحاسوب مع النصوص خلف الكواليس رياضياً ومنطقياً.">
+      <div class="glass-card w-full max-w-4xl p-8 md:p-12 rounded-3xl relative overflow-hidden border border-cyan-500/30">
+        <div class="absolute -top-24 -right-24 w-72 h-72 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none"></div>
+        <div class="absolute -bottom-24 -left-24 w-72 h-72 bg-indigo-500/15 rounded-full blur-3xl pointer-events-none"></div>
+
+        <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-cyan-500/10 border border-cyan-400/30 text-cyan-300 text-xs md:text-sm font-semibold mb-6">
+          <span class="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></span>
+          سمنار التخرج والبحث العلمي الميداني • هياكل البيانات والخوارزميات
+        </div>
+
+        <div class="mb-6 rounded-2xl overflow-hidden border border-cyan-500/30 shadow-[0_0_25px_rgba(6,182,212,0.2)] max-w-2xl mx-auto">
+          <img src="bubble_sort_tech_1791914244579.jpg" alt="Bubble Sort Hologram" class="w-full h-48 md:h-64 object-cover">
+        </div>
+
+        <h1 class="text-3xl md:text-5xl font-black text-white leading-tight mb-4 tracking-normal glow-text">
+          فرز الأسماء أبجدياً باستخدام خوارزمية <span class="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-sky-300 to-indigo-400">Bubble Sort</span>
+        </h1>
+        <h2 class="text-xl md:text-2xl font-bold text-slate-300 mb-8 font-mono">
+          Alphabetical Sorting via ASCII Character-by-Character in C++
+        </h2>
+
+        <!-- Info Grid (Student, Supervisor, Department) -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 pt-6 border-t border-slate-700/70 text-right">
+          <div class="p-4 rounded-xl bg-slate-900/60 border border-slate-700/40">
+            <p class="text-xs text-slate-400 mb-1 font-semibold">إعداد الطالب الباحث:</p>
+            <p class="text-base font-bold text-cyan-300">علي فرحان عباس</p>
+            <span class="inline-block mt-1 text-[11px] px-2 py-0.5 rounded bg-cyan-950 text-cyan-400 border border-cyan-800">طالب مشارك 1</span>
+          </div>
+
+          <div class="p-4 rounded-xl bg-slate-900/60 border border-indigo-500/30">
+            <p class="text-xs text-slate-400 mb-1 font-semibold">تحت إشراف:</p>
+            <p class="text-base font-bold text-indigo-300">دكتورة رشا المحترمة</p>
+            <span class="inline-block mt-1 text-[11px] px-2 py-0.5 rounded bg-indigo-950 text-indigo-300 border border-indigo-800">مشرفة السمنار الأكاديمي</span>
+          </div>
+
+          <div class="p-4 rounded-xl bg-slate-900/60 border border-slate-700/40">
+            <p class="text-xs text-slate-400 mb-1 font-semibold">المؤسسة الأكاديمية:</p>
+            <p class="text-sm font-bold text-slate-200">جامعة القادسية</p>
+            <p class="text-xs text-slate-400">كلية علوم الحاسوب وتكنولوجيا المعلومات</p>
+            <p class="text-[11px] text-cyan-400 mt-0.5">قسم علوم الحاسوب</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= SLIDE 2: Team Members ================= -->
+    <section class="slide flex-col justify-center items-center py-6 px-4" data-slide="2" data-notes="في هذا السلايد نستعرض هيكلية فريق العمل. المشروع تم إعداده بجهد أكاديمي، مع تخصيص أماكن لباقي الزملاء المشاركين في المجموعة مستقبلاً.">
+      <div class="glass-card w-full max-w-4xl p-8 rounded-3xl border border-slate-700/80">
+        <div class="flex items-center justify-between mb-6 border-b border-slate-700/60 pb-4">
+          <div>
+            <span class="text-xs text-cyan-400 font-bold uppercase tracking-wider">Academic Team</span>
+            <h2 class="text-2xl md:text-3xl font-black text-white">فريق العمل والطلبة المشاركون</h2>
+          </div>
+          <div class="w-12 h-12 rounded-xl bg-indigo-500/10 border border-indigo-500/30 flex items-center justify-center text-indigo-400">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-5 gap-3 mb-6">
+          <!-- Leader -->
+          <div class="p-4 rounded-xl bg-gradient-to-b from-cyan-950/60 to-slate-900 border-2 border-cyan-500/50 flex flex-col items-center text-center shadow-lg">
+            <div class="w-12 h-12 rounded-full bg-cyan-500/20 border border-cyan-400 flex items-center justify-center text-cyan-300 font-black mb-2 text-lg">1</div>
+            <h4 class="font-bold text-white text-sm">علي فرحان عباس</h4>
+            <span class="text-[11px] text-cyan-400 mt-1 font-semibold">ممثل وباحث رئيسي</span>
+            <span class="mt-2 text-[10px] bg-cyan-500/20 text-cyan-300 px-2 py-0.5 rounded-full">حاضر ومشارك</span>
+          </div>
+
+          <!-- Placeholder 2 -->
+          <div class="p-4 rounded-xl bg-slate-900/40 border border-dashed border-slate-700 flex flex-col items-center text-center opacity-70">
+            <div class="w-12 h-12 rounded-full bg-slate-800 border border-slate-600 flex items-center justify-center text-slate-400 font-black mb-2 text-lg">2</div>
+            <h4 class="font-medium text-slate-300 text-sm">لا يوجد حالياً</h4>
+            <span class="text-[11px] text-slate-500 mt-1">مقعد مخصص</span>
+            <span class="mt-2 text-[10px] bg-slate-800 text-slate-400 px-2 py-0.5 rounded-full">شاغر</span>
+          </div>
+
+          <!-- Placeholder 3 -->
+          <div class="p-4 rounded-xl bg-slate-900/40 border border-dashed border-slate-700 flex flex-col items-center text-center opacity-70">
+            <div class="w-12 h-12 rounded-full bg-slate-800 border border-slate-600 flex items-center justify-center text-slate-400 font-black mb-2 text-lg">3</div>
+            <h4 class="font-medium text-slate-300 text-sm">لا يوجد حالياً</h4>
+            <span class="text-[11px] text-slate-500 mt-1">مقعد مخصص</span>
+            <span class="mt-2 text-[10px] bg-slate-800 text-slate-400 px-2 py-0.5 rounded-full">شاغر</span>
+          </div>
+
+          <!-- Placeholder 4 -->
+          <div class="p-4 rounded-xl bg-slate-900/40 border border-dashed border-slate-700 flex flex-col items-center text-center opacity-70">
+            <div class="w-12 h-12 rounded-full bg-slate-800 border border-slate-600 flex items-center justify-center text-slate-400 font-black mb-2 text-lg">4</div>
+            <h4 class="font-medium text-slate-300 text-sm">لا يوجد حالياً</h4>
+            <span class="text-[11px] text-slate-500 mt-1">مقعد مخصص</span>
+            <span class="mt-2 text-[10px] bg-slate-800 text-slate-400 px-2 py-0.5 rounded-full">شاغر</span>
+          </div>
+
+          <!-- Placeholder 5 -->
+          <div class="p-4 rounded-xl bg-slate-900/40 border border-dashed border-slate-700 flex flex-col items-center text-center opacity-70">
+            <div class="w-12 h-12 rounded-full bg-slate-800 border border-slate-600 flex items-center justify-center text-slate-400 font-black mb-2 text-lg">5</div>
+            <h4 class="font-medium text-slate-300 text-sm">لا يوجد حالياً</h4>
+            <span class="text-[11px] text-slate-500 mt-1">مقعد مخصص</span>
+            <span class="mt-2 text-[10px] bg-slate-800 text-slate-400 px-2 py-0.5 rounded-full">شاغر</span>
+          </div>
+        </div>
+
+        <!-- Supervisor Banner -->
+        <div class="p-4 rounded-2xl bg-indigo-950/40 border border-indigo-500/30 flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-indigo-500/20 text-indigo-300 flex items-center justify-center font-bold">
+              🎓
+            </div>
+            <div>
+              <p class="text-xs text-indigo-300">الإشراف والمتابعة الأكاديمية</p>
+              <h3 class="text-lg font-bold text-white">دكتورة رشا المحترمة</h3>
+            </div>
+          </div>
+          <span class="text-xs px-3 py-1 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-400/30">قسم علوم الحاسوب</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= SLIDE 3: Objectives & Benefits ================= -->
+    <section class="slide flex-col justify-center items-center py-6 px-4" data-slide="3" data-notes="لماذا نقوم بفرز النصوص؟ في العالم الحقيقي، قواعد بيانات الطلاب، سجلات المستشفيات، وفهارس محركات البحث لا يمكن أن تعمل بكفاءة بدون فرز. كما أن اختيار مصفوفة ثابتة الحجم يوفر إدارة ذاكرة متوقعة وسريعة في الأنظمة المضمنة.">
+      <div class="glass-card w-full max-w-4xl p-8 rounded-3xl border border-slate-700/80">
+        <div class="mb-6">
+          <span class="text-xs text-cyan-400 font-bold uppercase tracking-wider">Project Significance</span>
+          <h2 class="text-2xl md:text-3xl font-black text-white">أهمية المشروع وأهدافه العلمية</h2>
+          <p class="text-sm text-slate-400 mt-1">لماذا نحتاج لفرز النصوص وما هي القيمة الهندسية لهذا النموذج؟</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+          <!-- Card 1: Benefits -->
+          <div class="p-5 rounded-2xl bg-slate-900/70 border border-cyan-500/30 flex flex-col justify-between">
+            <div>
+              <div class="flex items-center gap-2 mb-3">
+                <span class="text-2xl">🌟</span>
+                <h3 class="text-lg font-bold text-cyan-300">الفائدة الواقعية (Real-World Impact)</h3>
+              </div>
+              <ul class="space-y-2 text-sm text-slate-300">
+                <li class="flex items-start gap-2">
+                  <span class="text-cyan-400 mt-0.5">✔</span>
+                  <span><strong>تسريع عمليات البحث:</strong> تحويل البحث الخطي $O(N)$ إلى بحث ثنائي سريع $O(\log N)$ مثل قوائم الطلبة ودليل الهواتف.</span>
+                </li>
+                <li class="flex items-start gap-2">
+                  <span class="text-cyan-400 mt-0.5">✔</span>
+                  <span><strong>تنظيم قواعد البيانات:</strong> تجنب تكرار السجلات وتسهيل الفهرسة المعجمية في نظم إدارة قواعد البيانات (DBMS).</span>
+                </li>
+                <li class="flex items-start gap-2">
+                  <span class="text-cyan-400 mt-0.5">✔</span>
+                  <span><strong>معالجة اللغات الطبيعية:</strong> الخطوة الأولى في بناء القواميس وخوارزميات المعاجم والترميز النصي.</span>
+                </li>
+              </ul>
+            </div>
+            <div class="mt-4 p-2.5 rounded-xl bg-cyan-950/40 border border-cyan-800/40 text-[11px] text-cyan-300">
+              💡 اختيار <span class="font-mono font-bold">Fixed-size Array (15)</span> يضمن حجزاً ذاكرياً متصلاً ومثالياً لشرح تعقيد الوقت والمكان.
+            </div>
+          </div>
+
+          <!-- Card 2: Objectives -->
+          <div class="p-5 rounded-2xl bg-slate-900/70 border border-indigo-500/30 flex flex-col justify-between">
+            <div>
+              <div class="flex items-center gap-2 mb-3">
+                <span class="text-2xl">🎯</span>
+                <h3 class="text-lg font-bold text-indigo-300">الأهداف الأكاديمية (Core Objectives)</h3>
+              </div>
+              <ul class="space-y-2 text-sm text-slate-300">
+                <li class="flex items-start gap-2">
+                  <span class="text-indigo-400 mt-0.5">1.</span>
+                  <span><strong>فهم عميق لخوارزمية Bubble Sort:</strong> استيعاب مبدأ الحلقات المتداخلة وتبديل العناصر المتجاورة.</span>
+                </li>
+                <li class="flex items-start gap-2">
+                  <span class="text-indigo-400 mt-0.5">2.</span>
+                  <span><strong>كشف التنفيذ الخفي للـ ASCII في C++:</strong> إثبات أن مقارنة النصوص هي في جوهرها مقارنة رقمية لأكواد المحارف الرياضية.</span>
+                </li>
+                <li class="flex items-start gap-2">
+                  <span class="text-indigo-400 mt-0.5">3.</span>
+                  <span><strong>تتبع الفروق بين الحروف الكبيرة والصغيرة:</strong> توضيح سبب ظهور الحروف الكبيرة قبل الصغيرة استناداً لجدول الـ ASCII القياسي.</span>
+                </li>
+              </ul>
+            </div>
+            <div class="mt-4 p-2.5 rounded-xl bg-indigo-950/40 border border-indigo-800/40 text-[11px] text-indigo-300">
+              📊 ربط النظرية بالتطبيق العملي عبر كود مكتبي متكامل بلغة ++C.
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= SLIDE 4: The C++ Code ================= -->
+    <section class="slide flex-col justify-center items-center py-6 px-4" data-slide="4" data-notes="هنا يظهر كود التجربة المعتمد. لدينا مصفوفة تحتوي 15 اسماً. استخدمنا حلقتين تكراريتين i و j، وشرط المقارنة الشهير names[j] > names[j+1]. لاحظوا أننا لم نحول الأسماء إلى أرقام يدوياً! لغة C++ تتولى ذلك ذاتياً.">
+      <div class="glass-card w-full max-w-5xl p-6 md:p-8 rounded-3xl border border-slate-700/80">
+        <div class="flex items-center justify-between mb-4 pb-3 border-b border-slate-700/60">
+          <div>
+            <span class="text-xs text-cyan-400 font-bold uppercase tracking-wider">Implementation</span>
+            <h2 class="text-xl md:text-2xl font-black text-white">الكود البرمجي للتجربة (C++ Source Code)</h2>
+          </div>
+          <span class="font-mono text-xs px-3 py-1 rounded bg-slate-800 text-slate-300 border border-slate-600">Standard C++11/17/20</span>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
+          <!-- Code Block (7 cols) -->
+          <div class="lg:col-span-8 bg-slate-950 p-4 rounded-2xl border border-slate-800 font-mono text-xs text-slate-200 overflow-x-auto leading-relaxed shadow-inner">
+<pre><span class="text-purple-400">#include</span> <span class="text-amber-300">&lt;iostream&gt;</span>
+<span class="text-purple-400">#include</span> <span class="text-amber-300">&lt;string&gt;</span>
+<span class="text-blue-400">using namespace</span> std;
+
+<span class="text-emerald-400">int</span> <span class="text-yellow-300">main</span>() {
+    <span class="text-slate-400">// 1. مصفوفة ثابتة الحجم تحتوي 15 اسماً</span>
+    <span class="text-sky-300">string</span> names[<span class="text-orange-400">15</span>] = {
+        <span class="text-emerald-300">"Ali"</span>, <span class="text-emerald-300">"Ameer"</span>, <span class="text-emerald-300">"baqer"</span>, <span class="text-emerald-300">"bhaa"</span>, <span class="text-emerald-300">"fras"</span>, 
+        <span class="text-emerald-300">"fars"</span>, <span class="text-emerald-300">"jafer"</span>, <span class="text-emerald-300">"banen"</span>, <span class="text-emerald-300">"rouqia"</span>, <span class="text-emerald-300">"aseil"</span>, 
+        <span class="text-emerald-300">"farhan"</span>, <span class="text-emerald-300">"zaid"</span>, <span class="text-emerald-300">"ahmed"</span>, <span class="text-emerald-300">"fatema"</span>, <span class="text-emerald-300">"mohammed"</span>
+    }; 
+    <span class="text-emerald-400">int</span> n = <span class="text-orange-400">15</span>;   
+
+    <span class="text-slate-400">// 2. خوارزمية الفرز الفقاعي (Bubble Sort)</span>
+    <span class="text-blue-400">for</span> (<span class="text-emerald-400">int</span> i = <span class="text-orange-400">0</span>; i &lt; n - <span class="text-orange-400">1</span>; i++) {
+        <span class="text-blue-400">for</span> (<span class="text-emerald-400">int</span> j = <span class="text-orange-400">0</span>; j &lt; n - i - <span class="text-orange-400">1</span>; j++) {
+            <span class="text-slate-400">// مقارنة معجمية حرفاً بحرف عبر ASCII تلقائياً</span>
+            <span class="text-blue-400">if</span> (names[j] &gt; names[j + <span class="text-orange-400">1</span>]) {
+                <span class="text-sky-300">string</span> temp = names[j];
+                names[j] = names[j + <span class="text-orange-400">1</span>];
+                names[j + <span class="text-orange-400">1</span>] = temp;
+            }
+        }
+    }
+
+    <span class="text-slate-400">// 3. طباعة الأسماء بعد الترتيب</span>
+    cout &lt;&lt; <span class="text-emerald-300">"--- Sorted Names) ---\n"</span>;
+    <span class="text-blue-400">for</span> (<span class="text-emerald-400">int</span> i = <span class="text-orange-400">0</span>; i &lt; n; i++) {
+        cout &lt;&lt; names[i] &lt;&lt; endl;
+    }
+    <span class="text-blue-400">return</span> <span class="text-orange-400">0</span>;
+}</pre>
+          </div>
+
+          <!-- Quick breakdown (4 cols) -->
+          <div class="lg:col-span-4 flex flex-col justify-between space-y-2">
+            <div class="p-3 rounded-xl bg-slate-900 border border-slate-700/70">
+              <span class="text-[10px] text-cyan-400 font-bold uppercase">الطبقة الأولى</span>
+              <h4 class="text-sm font-bold text-white">تخزين المصفوفة</h4>
+              <p class="text-xs text-slate-300 mt-1">حجز مساحة خطية متصلة لـ 15 عنصر من نوع <span class="font-mono text-cyan-300">std::string</span> في الذاكرة.</p>
+            </div>
+
+            <div class="p-3 rounded-xl bg-slate-900 border border-slate-700/70">
+              <span class="text-[10px] text-indigo-400 font-bold uppercase">الطبقة الثانية</span>
+              <h4 class="text-sm font-bold text-white">المقارنة المعجمية</h4>
+              <p class="text-xs text-slate-300 mt-1">المعامل <span class="font-mono text-amber-300">&gt;</span> يستدعي الدالة الباطنية لمقارنة مصفوفة الحروف بالـ ASCII كود.</p>
+            </div>
+
+            <div class="p-3 rounded-xl bg-slate-900 border border-slate-700/70">
+              <span class="text-[10px] text-emerald-400 font-bold uppercase">الطبقة الثالثة</span>
+              <h4 class="text-sm font-bold text-white">التبديل المكاني (In-Place)</h4>
+              <p class="text-xs text-slate-300 mt-1">استخدام متغير مؤقت <span class="font-mono text-emerald-300">temp</span> لإجراء التبديل بدون استهلاك ذاكرة إضافية.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= SLIDE 5: How Bubble Sort Works ================= -->
+    <section class="slide flex-col justify-center items-center py-6 px-4" data-slide="5" data-notes="كيف يعمل الفرز الفقاعي فعلياً؟ تخيلوا فقاعات الهواء تصعد إلى السطح. في كل دورة تمر الحلقة الداخلية على العناصر وتدفع الاسم الأكبر أبجدياً إلى نهاية المصفوفة. بعد كل جولة نختصر المقارنات لأن العنصر الأخير قد استقر في مكانه الصحيح.">
+      <div class="glass-card w-full max-w-4xl p-8 rounded-3xl border border-slate-700/80">
+        <div class="mb-6 border-b border-slate-700/60 pb-3">
+          <span class="text-xs text-cyan-400 font-bold uppercase tracking-wider">Algorithm Mechanics</span>
+          <h2 class="text-2xl md:text-3xl font-black text-white">آلية عمل الفرز الفقاعي (Bubble Sort)</h2>
+          <p class="text-sm text-slate-300 mt-1">كيف ترتفع الأسماء الأكبر نحو القمة خطوة بخطوة؟</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+          <div class="p-4 rounded-2xl bg-slate-900/80 border border-cyan-500/30 text-center">
+            <div class="w-10 h-10 mx-auto rounded-full bg-cyan-500/20 text-cyan-300 font-bold flex items-center justify-center mb-2">1</div>
+            <h4 class="font-bold text-white text-sm mb-1">الحلقة الخارجية (i Loop)</h4>
+            <p class="text-xs text-slate-300 font-mono text-cyan-300 mb-2">for (i = 0; i &lt; n - 1)</p>
+            <p class="text-xs text-slate-400">تحدد عدد الجولات الكلية (Passes). نحتاج إلى 14 جولة لترتيب 15 اسماً بالكامل.</p>
+          </div>
+
+          <div class="p-4 rounded-2xl bg-slate-900/80 border border-indigo-500/30 text-center">
+            <div class="w-10 h-10 mx-auto rounded-full bg-indigo-500/20 text-indigo-300 font-bold flex items-center justify-center mb-2">2</div>
+            <h4 class="font-bold text-white text-sm mb-1">الحلقة الداخلية (j Loop)</h4>
+            <p class="text-xs text-slate-300 font-mono text-indigo-300 mb-2">for (j = 0; j &lt; n - i - 1)</p>
+            <p class="text-xs text-slate-400">تقوم بالمقارنة بين جارين متلاصقين <span class="font-mono">names[j]</span> و <span class="font-mono">names[j+1]</span> وتقل نطاقاً مع كل جولة.</p>
+          </div>
+
+          <div class="p-4 rounded-2xl bg-slate-900/80 border border-emerald-500/30 text-center">
+            <div class="w-10 h-10 mx-auto rounded-full bg-emerald-500/20 text-emerald-300 font-bold flex items-center justify-center mb-2">3</div>
+            <h4 class="font-bold text-white text-sm mb-1">عملية التبديل (Swapping)</h4>
+            <p class="text-xs text-slate-300 font-mono text-emerald-300 mb-2">temp = A; A = B; B = temp;</p>
+            <p class="text-xs text-slate-400">إذا كان الاسم الحالي أكبر أبجدياً من الذي يليه، يتم التبديل مباشرة لضمان التقدم الصحيح.</p>
+          </div>
+        </div>
+
+        <!-- Visual simulation box -->
+        <div class="p-4 rounded-2xl bg-slate-950 border border-slate-800">
+          <p class="text-xs font-bold text-slate-400 mb-2">مثال بصري سريع لجولة واحدة (Single Pass Demo):</p>
+          <div class="flex flex-wrap items-center justify-center gap-2 font-mono text-xs text-center" dir="ltr">
+            <div class="p-2 rounded bg-rose-950/80 border border-rose-500/40 text-rose-300">"fras"<br><span class="text-[10px] text-slate-400">j</span></div>
+            <div class="text-slate-500 font-bold">VS</div>
+            <div class="p-2 rounded bg-emerald-950/80 border border-emerald-500/40 text-emerald-300">"fars"<br><span class="text-[10px] text-slate-400">j+1</span></div>
+            <div class="text-cyan-400 font-bold">➔ الشرط متحقق (fras &gt; fars) ➔ تبديل! ➔</div>
+            <div class="p-2 rounded bg-emerald-950/80 border border-emerald-500/40 text-emerald-300">"fars"</div>
+            <div class="p-2 rounded bg-rose-950/80 border border-rose-500/40 text-rose-300">"fras"</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= SLIDE 6: The Secret: ASCII & C++ Comparison ================= -->
+    <section class="slide flex-col justify-center items-center py-6 px-4" data-slide="6" data-notes="هنا يكمن سر التجربة الأهم: كيف تفهم C++ أن 'Ali' أصغر من 'baqer'؟ الحاسوب لا يفهم الحروف إطلاقاً بل يتعامل مع أرقام. C++ تطبق المقارنة المعجمية Lexicographical comparison. حيث تفحص الحرف الأول وتحوله إلى رقم الـ ASCII الخاص به، فإذا تساويا انتقلت للحرف التالي وهكذا.">
+      <div class="glass-card w-full max-w-4xl p-8 rounded-3xl border border-slate-700/80">
+        <div class="mb-5 border-b border-slate-700/60 pb-3">
+          <span class="text-xs text-cyan-400 font-bold uppercase tracking-wider">Under The Hood</span>
+          <h2 class="text-2xl md:text-3xl font-black text-white">سر مقارنة النصوص: محرك الـ ASCII الداخلي في C++</h2>
+          <p class="text-sm text-slate-300 mt-1">كيف يتعامل المعالج ومترجم C++ مع الكلمات خلف الكواليس؟</p>
+        </div>
+
+        <div class="space-y-4 text-sm text-slate-200">
+          <div class="p-4 rounded-xl bg-slate-900/80 border-r-4 border-cyan-400 flex items-start gap-3">
+            <span class="text-xl">⚙️</span>
+            <div>
+              <h4 class="font-bold text-white text-sm">المقارنة المعجمية التلقائية (Lexicographical Comparison)</h4>
+              <p class="text-xs text-slate-300 mt-1">
+                عند كتابة <span class="font-mono text-cyan-300">names[j] &gt; names[j+1]</span>، يقوم مشغل المقارنة المدمج في فئة <span class="font-mono text-cyan-300">std::string</span> بإجراء فحص حرف-بحرف (Character-by-Character) دون الحاجة لدوال تحويل يدوية.
+              </p>
+            </div>
+          </div>
+
+          <div class="p-4 rounded-xl bg-slate-900/80 border-r-4 border-indigo-400 flex items-start gap-3">
+            <span class="text-xl">🔢</span>
+            <div>
+              <h4 class="font-bold text-white text-sm">التحويل الرقمي الصامت لقيم ASCII</h4>
+              <p class="text-xs text-slate-300 mt-1">
+                كل حرف يُخزن كبايت (Byte) يحمل قيمة رقمية مطابقة لجدول <strong>ASCII القياسي</strong>. عندما يقارن الحاسوب حرفين، فإنه في الواقع يطرح القيمتين الرقميتين في مسجلات المعالج (CPU Registers):
+              </p>
+              <div class="mt-2 flex items-center gap-4 font-mono text-xs" dir="ltr">
+                <span class="px-2 py-1 rounded bg-slate-800 text-sky-300">'A' = 65 (DEC)</span>
+                <span class="text-slate-500">مقارنة مع</span>
+                <span class="px-2 py-1 rounded bg-slate-800 text-indigo-300">'a' = 97 (DEC)</span>
+                <span class="text-emerald-400 font-bold">➔ 65 &lt; 97</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="p-4 rounded-xl bg-slate-900/80 border-r-4 border-amber-400 flex items-start gap-3">
+            <span class="text-xl">🎯</span>
+            <div>
+              <h4 class="font-bold text-white text-sm">حالة تشابه الحروف الأولى (Tie Breaking)</h4>
+              <p class="text-xs text-slate-300 mt-1">
+                إذا تطابق الحرف الأول (مثلاً بين <span class="font-mono text-amber-300">Ali</span> و <span class="font-mono text-amber-300">Ameer</span> الحرف الأول هو <strong>'A'</strong> بقيمة 65)، ينتقل الفحص تلقائياً للحرف الثاني: حرف <strong>'l'</strong> (108) مقابل حرف <strong>'m'</strong> (109). وبما أن 108 &lt; 109 فإن كلمة "Ali" تسبق "Ameer"!
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= SLIDE 7: ASCII Table & Case Sensitivity ================= -->
+    <section class="slide flex-col justify-center items-center py-6 px-4" data-slide="7" data-notes="بالرجوع إلى جدول ASCII القياسي المرفق في أوراق التجربة: الحروف الكبيرة من A إلى Z تبدأ من الرقم 65 إلى 90. أما الحروف الصغيرة من a إلى z فتبدأ من 97 إلى 122. هذا يفسر لماذا ظهر الاسمان Ali و Ameer في بداية القائمة المفرزة قبل أحمد وباقر، لأن الحرف الكبير 65 يأتي قبل الحرف الصغير 97 في الذاكرة!">
+      <div class="glass-card w-full max-w-5xl p-6 md:p-8 rounded-3xl border border-slate-700/80">
+        <div class="flex items-center justify-between mb-4 pb-2 border-b border-slate-700/60">
+          <div>
+            <span class="text-xs text-cyan-400 font-bold uppercase tracking-wider">ASCII Standard Table</span>
+            <h2 class="text-xl md:text-2xl font-black text-white">جدول الـ ASCII وتأثير حالة الأحرف (Case Sensitivity)</h2>
+          </div>
+          <span class="text-xs bg-cyan-950 text-cyan-300 px-3 py-1 rounded-full border border-cyan-800">مستخرج من وثيقة التجربة المعتمدة</span>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+          <!-- Uppercase Table -->
+          <div class="p-4 rounded-2xl bg-slate-900 border border-cyan-500/30">
+            <div class="flex items-center justify-between mb-2">
+              <h4 class="font-bold text-cyan-300 text-sm">الحروف الكبيرة (Uppercase A-Z)</h4>
+              <span class="font-mono text-xs text-cyan-400">DEC: 65 - 90</span>
+            </div>
+            <div class="grid grid-cols-4 gap-1.5 font-mono text-xs text-center" dir="ltr">
+              <div class="p-1.5 bg-slate-800 rounded border border-cyan-700/50 text-cyan-200">A : 65</div>
+              <div class="p-1.5 bg-slate-800 rounded border border-cyan-700/50 text-cyan-200">B : 66</div>
+              <div class="p-1.5 bg-slate-800 rounded border border-cyan-700/50 text-cyan-200">C : 67</div>
+              <div class="p-1.5 bg-slate-800 rounded border border-cyan-700/50 text-cyan-200">D : 68</div>
+              <div class="p-1.5 bg-slate-800 rounded border border-cyan-700/50 text-cyan-200">E : 69</div>
+              <div class="p-1.5 bg-slate-800 rounded border border-cyan-700/50 text-cyan-200">F : 70</div>
+              <div class="p-1.5 bg-slate-800 rounded border border-cyan-700/50 text-cyan-200">G : 71</div>
+              <div class="p-1.5 bg-slate-800 rounded border border-cyan-700/50 text-cyan-200">H : 72</div>
+              <div class="p-1.5 bg-slate-800 rounded border border-cyan-700/50 text-cyan-200">M : 77</div>
+              <div class="p-1.5 bg-slate-800 rounded border border-cyan-700/50 text-cyan-200">R : 82</div>
+              <div class="p-1.5 bg-slate-800 rounded border border-cyan-700/50 text-cyan-200">Y : 89</div>
+              <div class="p-1.5 bg-slate-800 rounded border border-cyan-700/50 text-cyan-200">Z : 90</div>
+            </div>
+          </div>
+
+          <!-- Lowercase Table -->
+          <div class="p-4 rounded-2xl bg-slate-900 border border-indigo-500/30">
+            <div class="flex items-center justify-between mb-2">
+              <h4 class="font-bold text-indigo-300 text-sm">الحروف الصغيرة (Lowercase a-z)</h4>
+              <span class="font-mono text-xs text-indigo-400">DEC: 97 - 122</span>
+            </div>
+            <div class="grid grid-cols-4 gap-1.5 font-mono text-xs text-center" dir="ltr">
+              <div class="p-1.5 bg-slate-800 rounded border border-indigo-700/50 text-indigo-200">a : 97</div>
+              <div class="p-1.5 bg-slate-800 rounded border border-indigo-700/50 text-indigo-200">b : 98</div>
+              <div class="p-1.5 bg-slate-800 rounded border border-indigo-700/50 text-indigo-200">c : 99</div>
+              <div class="p-1.5 bg-slate-800 rounded border border-indigo-700/50 text-indigo-200">e : 101</div>
+              <div class="p-1.5 bg-slate-800 rounded border border-indigo-700/50 text-indigo-200">f : 102</div>
+              <div class="p-1.5 bg-slate-800 rounded border border-indigo-700/50 text-indigo-200">j : 106</div>
+              <div class="p-1.5 bg-slate-800 rounded border border-indigo-700/50 text-indigo-200">l : 108</div>
+              <div class="p-1.5 bg-slate-800 rounded border border-indigo-700/50 text-indigo-200">m : 109</div>
+              <div class="p-1.5 bg-slate-800 rounded border border-indigo-700/50 text-indigo-200">r : 114</div>
+              <div class="p-1.5 bg-slate-800 rounded border border-indigo-700/50 text-indigo-200">s : 115</div>
+              <div class="p-1.5 bg-slate-800 rounded border border-indigo-700/50 text-indigo-200">u : 117</div>
+              <div class="p-1.5 bg-slate-800 rounded border border-indigo-700/50 text-indigo-200">z : 122</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Analytical Observation -->
+        <div class="p-3.5 rounded-xl bg-amber-950/40 border border-amber-500/40 text-amber-200 text-xs flex items-center gap-3">
+          <span class="text-2xl">⚠️</span>
+          <div>
+            <strong>ملاحظة أكاديمية جوهرية للمناقشة:</strong>
+            لماذا جاءت <span class="font-mono font-bold text-white">Ali (65)</span> قبل <span class="font-mono font-bold text-white">ahmed (97)</span>؟ 
+            لأن الحرف الكبير <strong>'A'</strong> يملك قيمة <strong>65</strong> بينما الحرف الصغير <strong>'a'</strong> يملك قيمة <strong>97</strong>، وبالتالي فإن الترتيب الأبجدي الطبيعي في الحاسوب يعطي الأولوية لجميع الحروف الكبيرة أولاً!
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= SLIDE 8: Detailed Trace / Case Studies ================= -->
+    <section class="slide flex-col justify-center items-center py-6 px-4" data-slide="8" data-notes="دعونا نتتبع حالتين عمليتين من الكود. الحالة الأولى بين 'fras' و 'fars': الحرف الأول متطابق f=102، الحرف الثاني r=114 مقابل a=97، بما أن 114 أكبر يتم التبديل. الحالة الثانية بين Ali و Ameer: A=65 متطابق، l=108 أصغر من m=109، فلا يحدث تبديل وتبقى Ali أولاً.">
+      <div class="glass-card w-full max-w-4xl p-8 rounded-3xl border border-slate-700/80">
+        <div class="mb-5 border-b border-slate-700/60 pb-3">
+          <span class="text-xs text-cyan-400 font-bold uppercase tracking-wider">Dry Run & Step-by-Step Trace</span>
+          <h2 class="text-2xl md:text-3xl font-black text-white">تتبع عملي للمقارنة خطوة بخطوة (Dry Run)</h2>
+          <p class="text-sm text-slate-300 mt-1">كيف حسم المترجم الترتيب بين أسماء متشابهة في المصفوفة؟</p>
+        </div>
+
+        <div class="space-y-4">
+          <!-- Case 1: fras vs fars -->
+          <div class="p-4 rounded-2xl bg-slate-900 border border-cyan-500/30">
+            <div class="flex items-center justify-between mb-2">
+              <h4 class="font-bold text-cyan-300 text-sm">الحالة الأولى: مقارنة الاسم "fras" مع "fars"</h4>
+              <span class="text-xs px-2 py-0.5 rounded bg-rose-950 text-rose-300 border border-rose-800">نتيجة الشرط: TRUE (تبديل)</span>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-2 font-mono text-xs text-center" dir="ltr">
+              <div class="p-2 bg-slate-800 rounded border border-slate-700">
+                <span class="text-slate-400 block text-[10px]">الحرف الأول</span>
+                'f' (102) == 'f' (102)
+                <span class="text-cyan-400 text-[10px] block mt-1">تطابق ➔ انتقال</span>
+              </div>
+              <div class="p-2 bg-slate-800 rounded border border-amber-600/60 bg-amber-950/20">
+                <span class="text-slate-400 block text-[10px]">الحرف الثاني (الحاسم)</span>
+                'r' (114) &gt; 'a' (97)
+                <span class="text-amber-400 text-[10px] block mt-1 font-bold">114 &gt; 97 متحقق!</span>
+              </div>
+              <div class="p-2 bg-slate-800 rounded border border-slate-700 opacity-60">
+                <span class="text-slate-400 block text-[10px]">بقية الحروف</span>
+                (تم التوقف)
+                <span class="text-slate-500 text-[10px] block mt-1">لا داعي للفحص</span>
+              </div>
+              <div class="p-2 bg-emerald-950/60 rounded border border-emerald-500/50 flex flex-col justify-center">
+                <span class="text-emerald-300 font-bold text-sm">"fars" تسبق "fras"</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Case 2: Ali vs Ameer -->
+          <div class="p-4 rounded-2xl bg-slate-900 border border-indigo-500/30">
+            <div class="flex items-center justify-between mb-2">
+              <h4 class="font-bold text-indigo-300 text-sm">الحالة الثانية: مقارنة الاسم "Ali" مع "Ameer"</h4>
+              <span class="text-xs px-2 py-0.5 rounded bg-emerald-950 text-emerald-300 border border-emerald-800">نتيجة الشرط: FALSE (لا تبديل)</span>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-2 font-mono text-xs text-center" dir="ltr">
+              <div class="p-2 bg-slate-800 rounded border border-slate-700">
+                <span class="text-slate-400 block text-[10px]">الحرف الأول</span>
+                'A' (65) == 'A' (65)
+                <span class="text-cyan-400 text-[10px] block mt-1">تطابق ➔ انتقال</span>
+              </div>
+              <div class="p-2 bg-slate-800 rounded border border-indigo-600/60 bg-indigo-950/20">
+                <span class="text-slate-400 block text-[10px]">الحرف الثاني (الحاسم)</span>
+                'l' (108) &lt; 'm' (109)
+                <span class="text-indigo-300 text-[10px] block mt-1 font-bold">108 ليس أكبر من 109</span>
+              </div>
+              <div class="p-2 bg-slate-800 rounded border border-slate-700 opacity-60">
+                <span class="text-slate-400 block text-[10px]">بقية الحروف</span>
+                (تم التوقف)
+                <span class="text-slate-500 text-[10px] block mt-1">الترتيب سليم مسبقاً</span>
+              </div>
+              <div class="p-2 bg-cyan-950/60 rounded border border-cyan-500/50 flex flex-col justify-center">
+                <span class="text-cyan-300 font-bold text-sm">"Ali" تسبق "Ameer"</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Interactive Live Tester -->
+          <div class="p-4 rounded-2xl bg-slate-950/90 border border-cyan-500/40 mt-3">
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-xs font-bold text-cyan-300 flex items-center gap-1.5">
+                <span>⚡</span> أداة الفحص التفاعلي الحي أمام اللجنة (Live ASCII Comparator)
+              </span>
+              <span class="text-[10px] text-slate-400">جرب كتابة أي اسمين وافحص أيهما يسبق الآخر</span>
+            </div>
+            <div class="flex flex-col sm:flex-row gap-2 mb-3">
+              <input id="testName1" type="text" value="Ali" class="bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white text-center font-mono focus:outline-none focus:border-cyan-400 flex-1">
+              <span class="text-slate-500 font-bold self-center text-xs">مقابل</span>
+              <input id="testName2" type="text" value="ahmed" class="bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white text-center font-mono focus:outline-none focus:border-cyan-400 flex-1">
+              <button onclick="compareNamesLive()" class="px-4 py-1.5 rounded-lg bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs transition">
+                فحص المقارنة
+              </button>
+            </div>
+            <div id="liveCompareResult" class="p-2.5 rounded-xl bg-slate-900/90 border border-slate-800 text-xs font-mono text-slate-300 text-center" dir="ltr">
+              <!-- Result renders here -->
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= SLIDE 9: Results & Output ================= -->
+    <section class="slide flex-col justify-center items-center py-6 px-4" data-slide="9" data-notes="هذه هي المخرجات الفعلية لشاشة الكونسول بعد تنفيذ الكود. نلاحظ المصفوفة قبل الفرز والمصفوفة بعد الفرز. النتائج جاءت مطابقة تماماً للمنطق الحسابي لأكواد ASCII.">
+      <div class="glass-card w-full max-w-4xl p-8 rounded-3xl border border-slate-700/80">
+        <div class="mb-5 border-b border-slate-700/60 pb-3">
+          <span class="text-xs text-cyan-400 font-bold uppercase tracking-wider">Experimental Results</span>
+          <h2 class="text-2xl md:text-3xl font-black text-white">مخرجات التنفيذ الفعلي (Terminal Output)</h2>
+          <p class="text-sm text-slate-300 mt-1">مقارنة حالة المصفوفة قبل الخوارزمية وبعد إتمام الفرز الكامل</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+          <!-- Before Sort -->
+          <div class="p-4 rounded-2xl bg-slate-950 border border-slate-800 flex flex-col">
+            <div class="flex items-center justify-between pb-2 mb-2 border-b border-slate-800">
+              <span class="text-xs font-bold text-rose-400">قبل الفرز (Unsorted 15 Names)</span>
+              <span class="text-[10px] bg-rose-950 text-rose-300 px-2 py-0.5 rounded">عشوائي</span>
+            </div>
+            <div class="font-mono text-xs text-slate-400 space-y-1 overflow-y-auto max-h-56 pr-2" dir="ltr">
+              <div>[00] Ali</div>
+              <div>[01] Ameer</div>
+              <div>[02] baqer</div>
+              <div>[03] bhaa</div>
+              <div>[04] fras</div>
+              <div>[05] fars</div>
+              <div>[06] jafer</div>
+              <div>[07] banen</div>
+              <div>[08] rouqia</div>
+              <div>[09] aseil</div>
+              <div>[10] farhan</div>
+              <div>[11] zaid</div>
+              <div>[12] ahmed</div>
+              <div>[13] fatema</div>
+              <div>[14] mohammed</div>
+            </div>
+          </div>
+
+          <!-- After Sort -->
+          <div class="p-4 rounded-2xl bg-slate-950 border border-emerald-500/40 flex flex-col shadow-[0_0_20px_rgba(16,185,129,0.1)]">
+            <div class="flex items-center justify-between pb-2 mb-2 border-b border-slate-800">
+              <span class="text-xs font-bold text-emerald-400">بعد الفرز (--- Sorted Names ---)</span>
+              <span class="text-[10px] bg-emerald-950 text-emerald-300 px-2 py-0.5 rounded font-bold">مرتب بالكامل ✔</span>
+            </div>
+            <div class="font-mono text-xs text-emerald-300 space-y-1 overflow-y-auto max-h-56 pr-2" dir="ltr">
+              <div class="text-cyan-300 font-bold">[00] Ali <span class="text-[10px] text-slate-500">(ASCII: 'A')</span></div>
+              <div class="text-cyan-300 font-bold">[01] Ameer <span class="text-[10px] text-slate-500">(ASCII: 'A')</span></div>
+              <div>[02] ahmed</div>
+              <div>[03] aseil</div>
+              <div>[04] banen</div>
+              <div>[05] baqer</div>
+              <div>[06] bhaa</div>
+              <div>[07] farhan</div>
+              <div>[08] fars</div>
+              <div>[09] fatema</div>
+              <div>[10] fras</div>
+              <div>[11] jafer</div>
+              <div>[12] mohammed</div>
+              <div>[13] rouqia</div>
+              <div>[14] zaid</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= SLIDE 10: Complexity & Conclusion ================= -->
+    <section class="slide flex-col justify-center items-center py-6 px-4" data-slide="10" data-notes="ختاماً، تحليل التعقيد: الوقت في الحالة الأسوأ والمتوسطة هو O(n^2) نظراً للحلقات المتداخلة، أما التعقيد المكاني فهو O(1) لأن الفرز تم موضعياً in-place. نشكر الدكتورة رشا وزملائنا الأعزاء، والآن نفتح باب الأسئلة والمناقشة.">
+      <div class="glass-card w-full max-w-4xl p-8 rounded-3xl border border-slate-700/80">
+        <div class="mb-5 border-b border-slate-700/60 pb-3">
+          <span class="text-xs text-cyan-400 font-bold uppercase tracking-wider">Complexity & Wrap-Up</span>
+          <h2 class="text-2xl md:text-3xl font-black text-white">تحليل الكفاءة (Complexity) والخاتمة</h2>
+          <p class="text-sm text-slate-300 mt-1">التقييم الخوارزمي النهائي ومسك ختام السمنار</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+          <!-- Time Complexity -->
+          <div class="p-4 rounded-2xl bg-slate-900 border border-amber-500/30">
+            <div class="flex items-center gap-2 mb-2">
+              <span class="text-xl">⏱️</span>
+              <h4 class="font-bold text-white text-sm">التعقيد الزمني (Time Complexity)</h4>
+            </div>
+            <div class="space-y-1 text-xs text-slate-300">
+              <div class="flex justify-between py-1 border-b border-slate-800">
+                <span>الحالة الأسوأ (Worst Case):</span>
+                <span class="font-mono font-bold text-amber-400">O(n²)</span>
+              </div>
+              <div class="flex justify-between py-1 border-b border-slate-800">
+                <span>الحالة المتوسطة (Average Case):</span>
+                <span class="font-mono font-bold text-amber-400">O(n²)</span>
+              </div>
+              <div class="flex justify-between py-1">
+                <span>معامل طول النص (String Length k):</span>
+                <span class="font-mono font-bold text-amber-300">O(k · n²)</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Space Complexity -->
+          <div class="p-4 rounded-2xl bg-slate-900 border border-emerald-500/30">
+            <div class="flex items-center gap-2 mb-2">
+              <span class="text-xl">💾</span>
+              <h4 class="font-bold text-white text-sm">التعقيد المكاني (Space Complexity)</h4>
+            </div>
+            <div class="space-y-1 text-xs text-slate-300">
+              <div class="flex justify-between py-1 border-b border-slate-800">
+                <span>المساحة الإضافية (Auxiliary Space):</span>
+                <span class="font-mono font-bold text-emerald-400">O(1) - In-Place</span>
+              </div>
+              <div class="flex justify-between py-1 border-b border-slate-800">
+                <span>المتغير المساعد:</span>
+                <span class="font-mono text-emerald-300">temp string</span>
+              </div>
+              <div class="flex justify-between py-1">
+                <span>استقرار الفرز (Stability):</span>
+                <span class="font-mono text-emerald-300 font-bold">Stable Sort ✔</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Seminar Conclusion / Questions -->
+        <div class="p-5 rounded-2xl bg-gradient-to-r from-cyan-950/60 to-indigo-950/60 border border-cyan-500/40 text-center">
+          <h3 class="text-xl font-black text-white mb-1">شكراً لحسن استماعكم وإصغائكم</h3>
+          <p class="text-xs text-cyan-300 mb-3">كل الشكر والتقدير للدكتورة رشا المحترمة ولجميع الزملاء الحضور في جامعة القادسية</p>
+          <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-cyan-500/20 text-cyan-300 text-xs font-bold border border-cyan-400/30">
+            <span>💬 نحن جاهزون لاستقبال أسئلتكم ومداخلاتكم العلمية</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Speaker Notes Drawer (Toggled) -->
+  <div id="speakerNotesDrawer" class="hidden w-full max-w-7xl mx-auto glass-accent p-4 rounded-2xl border border-cyan-400/40 mb-4 transition-all">
+    <div class="flex items-center justify-between mb-2 pb-1 border-b border-cyan-500/30">
+      <div class="flex items-center gap-2 text-cyan-300 text-xs font-bold">
+        <span>🎙️</span>
+        <span>سكربت التحدث المقترح أمام اللجنة والأستاذة (Speaker Script):</span>
+      </div>
+      <button onclick="toggleNotes()" class="text-slate-400 hover:text-white text-xs">إغلاق ✕</button>
+    </div>
+    <p id="currentSpeakerNote" class="text-sm text-slate-200 leading-relaxed font-medium">
+      ...
+    </p>
+  </div>
+
+  <!-- Bottom Navigation Controls -->
+  <footer class="w-full max-w-7xl mx-auto flex items-center justify-between glass-card px-5 py-3 rounded-2xl mt-4">
+    <div class="flex items-center gap-2">
+      <button id="prevBtn" onclick="prevSlide()" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-sm font-semibold transition border border-slate-700 flex items-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed">
+        <svg class="w-4 h-4 rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+        <span>السابق</span>
+      </button>
+
+      <button id="nextBtn" onclick="nextSlide()" class="px-5 py-2 rounded-xl gradient-badge hover:opacity-95 text-white text-sm font-bold transition shadow-[0_0_15px_rgba(14,165,233,0.4)] flex items-center gap-2">
+        <span>التالي</span>
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+      </button>
+    </div>
+
+    <!-- Dots -->
+    <div id="slideDots" class="hidden sm:flex items-center gap-1.5">
+      <!-- Generated via JS -->
+    </div>
+
+    <div class="text-xs text-slate-400 font-mono hidden md:block">
+      مفاتيح الأسهم [← / →] للتنقل
+    </div>
+  </footer>
+
+  <script>
+    let currentSlide = 1;
+    const slides = document.querySelectorAll('.slide');
+    const totalSlides = slides.length;
+    const slideNumberEl = document.getElementById('slideNumber');
+    const totalSlidesEl = document.getElementById('totalSlides');
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const slideDotsContainer = document.getElementById('slideDots');
+    const speakerNotesDrawer = document.getElementById('speakerNotesDrawer');
+    const currentSpeakerNote = document.getElementById('currentSpeakerNote');
+
+    totalSlidesEl.textContent = String(totalSlides).padStart(2, '0');
+
+    // Create dots
+    slides.forEach((_, idx) => {
+      const dot = document.createElement('button');
+      dot.className = `w-2.5 h-2.5 rounded-full transition-all duration-300 ${idx === 0 ? 'bg-cyan-400 w-6' : 'bg-slate-700 hover:bg-slate-500'}`;
+      dot.onclick = () => goToSlide(idx + 1);
+      slideDotsContainer.appendChild(dot);
+    });
+
+    function updateSlide() {
+      slides.forEach((s, idx) => {
+        if (idx + 1 === currentSlide) {
+          s.classList.add('active');
+          const note = s.getAttribute('data-notes') || '';
+          currentSpeakerNote.textContent = note;
+        } else {
+          s.classList.remove('active');
+        }
+      });
+
+      slideNumberEl.textContent = String(currentSlide).padStart(2, '0');
+      prevBtn.disabled = currentSlide === 1;
+      nextBtn.disabled = currentSlide === totalSlides;
+
+      // Update dots
+      const dots = slideDotsContainer.children;
+      for (let i = 0; i < dots.length; i++) {
+        if (i + 1 === currentSlide) {
+          dots[i].className = 'w-6 h-2.5 rounded-full bg-cyan-400 transition-all duration-300 shadow-[0_0_10px_rgba(34,211,238,0.8)]';
+        } else {
+          dots[i].className = 'w-2.5 h-2.5 rounded-full bg-slate-700 hover:bg-slate-500 transition-all duration-300';
+        }
+      }
+    }
+
+    function nextSlide() {
+      if (currentSlide < totalSlides) {
+        currentSlide++;
+        updateSlide();
+      }
+    }
+
+    function prevSlide() {
+      if (currentSlide > 1) {
+        currentSlide--;
+        updateSlide();
+      }
+    }
+
+    function goToSlide(n) {
+      if (n >= 1 && n <= totalSlides) {
+        currentSlide = n;
+        updateSlide();
+      }
+    }
+
+    function toggleNotes() {
+      speakerNotesDrawer.classList.toggle('hidden');
+    }
+
+    function compareNamesLive() {
+      const s1 = document.getElementById('testName1').value;
+      const s2 = document.getElementById('testName2').value;
+      const resEl = document.getElementById('liveCompareResult');
+      
+      let steps = [];
+      let minLen = Math.min(s1.length, s2.length);
+      let diffFound = false;
+      let winner = '';
+
+      for (let i = 0; i < minLen; i++) {
+        const c1 = s1[i];
+        const c2 = s2[i];
+        const code1 = c1.charCodeAt(0);
+        const code2 = c2.charCodeAt(0);
+
+        if (code1 === code2) {
+          steps.push(`Index ${i}: '${c1}' (${code1}) == '${c2}' (${code2}) ➔ متطابق`);
+        } else if (code1 < code2) {
+          steps.push(`Index ${i} [الحاسم]: '${c1}' (${code1}) < '${c2}' (${code2}) ➔ إذن "${s1}" تسبق "${s2}"`);
+          diffFound = true;
+          winner = `"${s1}" تسبق "${s2}" في الترتيب الأبجدي`;
+          break;
+        } else {
+          steps.push(`Index ${i} [الحاسم]: '${c1}' (${code1}) > '${c2}' (${code2}) ➔ إذن "${s2}" تسبق "${s1}"`);
+          diffFound = true;
+          winner = `"${s2}" تسبق "${s1}" في الترتيب الأبجدي (يحدث تبديل Swap في الكود!)`;
+          break;
+        }
+      }
+
+      if (!diffFound) {
+        if (s1.length < s2.length) {
+          winner = `"${s1}" أقصر وتسبق "${s2}"`;
+        } else if (s1.length > s2.length) {
+          winner = `"${s2}" أقصر وتسبق "${s1}"`;
+        } else {
+          winner = `الاسمان متطابقان تماماً`;
+        }
+      }
+
+      resEl.innerHTML = `
+        <div class="text-cyan-300 font-bold mb-1">${steps.join('  |  ')}</div>
+        <div class="text-emerald-400 font-bold mt-1 text-sm bg-slate-800/80 p-1.5 rounded border border-emerald-500/30">النتيجة النهائية في C++: ${winner}</div>
+      `;
+    }
+
+    // Keyboard support
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+        prevSlide();
+      } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+        nextSlide();
+      } else if (e.key === 'n' || e.key === 'N') {
+        toggleNotes();
+      }
+    });
+
+    // Initial update
+    updateSlide();
+    compareNamesLive();
+  </script>
+</body>
+</html>
